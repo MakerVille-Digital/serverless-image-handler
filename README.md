@@ -2,6 +2,26 @@
 
 **Note**: If you want to use the solution without building from source, navigate to [Solution Landing Page](https://aws.amazon.com/solutions/implementations/serverless-image-handler/).
 
+## Example request
+
+```
+{
+  bucket: <bucket-name>,
+  key: <image-key>,
+  edits: {
+    resize: {
+      width: 280,   // < should be smaller than the size in blurResize, inner picture size
+      height: 280,
+      fit: "fill",
+    },
+    blurResize: {
+      size: 400,    // output image size
+      blur: 6,
+    },
+  },
+}
+```
+
 ## Table of Content
 
 - [Solution Overview](#solution-overview)
@@ -54,7 +74,6 @@ cd serverless-image-handler
 export MAIN_DIRECTORY=$PWD
 ```
 
-
 ### 2. Unit Test
 
 After making changes, run unit tests to make sure added customization passes the tests:
@@ -65,17 +84,18 @@ chmod +x run-unit-tests.sh && ./run-unit-tests.sh
 ```
 
 ### 3. Build and Deploy
+
 ```bash
 cd $MAIN_DIRECTORY/source/constructs
 npm run clean:install
-overrideWarningsEnabled=false npx cdk bootstrap --profile <PROFILE_NAME>
+overrideWarningsEnabled=false npx cdk bootstrap
 overrideWarningsEnabled=false npx cdk deploy\
  --parameters DeployDemoUIParameter=Yes\
-  --parameters SourceBucketsParameter=<MY_BUCKET>\
-   --profile <PROFILE_NAME>
+  --parameters SourceBucketsParameter=static.mirrorweare.com,static.makealive.com,makerville.hk,www-dev.makerville.hk,makealive-resources-dev,makerville-mofc-dev
 ```
 
 _Note:_
+
 - **MY_BUCKET**: name of an existing bucket in your account
 - **PROFILE_NAME**: name of an AWS CLI profile that has appropriate credentials for deploying in your preferred region
 
@@ -112,5 +132,5 @@ This solution collects anonymous operational metrics to help AWS improve the qua
 
 # License
 
-Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.   
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.  
 SPDX-License-Identifier: Apache-2.0

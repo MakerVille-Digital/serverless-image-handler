@@ -164,6 +164,10 @@ export class ImageHandler {
         case "animated": {
           break;
         }
+        case "blurResize": {
+          await this.blurResize(originalImage, edits);
+          break;
+        }
         default: {
           if (edit in originalImage) {
             originalImage[edit](edits[edit]);
@@ -442,6 +446,34 @@ export class ImageHandler {
         StatusCodes.BAD_REQUEST,
         "Crop::AreaOutOfBounds",
         "The cropping area you provided exceeds the boundaries of the original image. Please try choosing a correct cropping value."
+      );
+    }
+  }
+
+  /**
+   * Applies crop edit.
+   * @param originalImage The original sharp image.
+   * @param edits The edits to be made to the original image.
+   */
+  private async blurResize(originalImage: sharp.Sharp, edits: ImageEdits): Promise<void> {
+    try {
+        // get width and height of the image
+        const metadata = await originalImage.metadata();
+        const resizeOptions = metadata.width > metadata.height 
+            ? { width: edits.blurResize.size } 
+            : { height: edits.blurResize.size };
+
+        const imageBuffer = await originalImage.resize(resizeOptions).toBuffer();
+
+        await originalImage
+          .resize(edits.blurResize.size, edits.blurResize.size, { fit: "cover" })
+          .blur(edits.blurResize.blur)
+          .composite([{ input: imageBuffer, gravity: "center" }])
+    } catch (error) {
+      throw new ImageHandlerError(
+        StatusCodes.BAD_REQUEST,
+        `BlurResize::${error.code}`,
+        error.message
       );
     }
   }
