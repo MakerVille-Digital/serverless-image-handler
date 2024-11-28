@@ -19,6 +19,22 @@
 }
 ```
 
+## Example code
+
+```
+const imageRequest = JSON.stringify({
+  link: "https://makerville.hk/uploads/medium_uncle_for_rent_mkv_c646964299.jpg",
+  edits: {
+    blurResize: {
+      size: 500,
+      blur: 6,
+    },
+  },
+});
+
+console.log(`https://d1fcriiw4qut8m.cloudfront.net/${btoa(imageRequest)}`);
+```
+
 ## Table of Content
 
 - [Solution Overview](#solution-overview)
