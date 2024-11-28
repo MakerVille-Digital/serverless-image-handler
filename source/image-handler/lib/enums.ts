@@ -46,3 +46,11 @@ export enum ContentTypes {
   SVG = "image/svg+xml",
   AVIF= "image/avif",
 }
+
+export const BucketEnum = {
+  "static.makealive.com": "static.makealive.com",
+  "static.mirrorweare.com": "static.mirrorweare.com",
+  "makerville.hk": "makerville.hk",
+  "www.makerville.hk": "makerville.hk",
+  "www-dev.makerville.hk": "www-dev.makerville.hk",
+} as const

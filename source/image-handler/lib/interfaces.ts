@@ -18,6 +18,7 @@ export interface ImageHandlerEvent {
 }
 
 export interface DefaultImageRequest {
+  link?: string;
   bucket?: string;
   key: string;
   edits?: ImageEdits;
@@ -40,6 +41,7 @@ export interface BoxSize {
 
 export interface ImageRequestInfo {
   requestType: RequestTypes;
+  link: string;
   bucket: string;
   key: string;
   edits?: ImageEdits;

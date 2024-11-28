@@ -5,6 +5,7 @@ import S3 from "aws-sdk/clients/s3";
 import { createHmac } from "crypto";
 
 import {
+  BucketEnum,
   ContentTypes,
   DefaultImageRequest,
   Headers,
@@ -215,6 +216,15 @@ export class ImageRequest {
       // Decode the image request
       const request = this.decodeRequest(event);
 
+      if (request.link !== undefined) {
+        const url = new URL(request.link);
+        if (Object.keys(BucketEnum).includes(url.hostname)) {
+          return BucketEnum[url.hostname];
+        } else if (url.host.includes(".s3.")) {
+          return url.host.split(".s3.")[0];
+        }
+      }
+
       if (request.bucket !== undefined) {
         // Check the provided bucket against the allowed list
         const sourceBuckets = this.getAllowedSourceBuckets();
@@ -294,7 +304,13 @@ export class ImageRequest {
   public parseImageKey(event: ImageHandlerEvent, requestType: RequestTypes, bucket: string = null): string {
     if (requestType === RequestTypes.DEFAULT) {
       // Decode the image request and return the image key
-      const { key } = this.decodeRequest(event);
+      const { key, link } = this.decodeRequest(event);
+
+      if (link !== undefined) {
+        const url = new URL(link);
+        return url.pathname.slice(1);
+      }
+
       return key;
     }
 

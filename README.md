@@ -6,16 +6,13 @@
 
 ```
 {
+  // either bucket + key or
   bucket: <bucket-name>,
   key: <image-key>,
+  link: <image-link>,
   edits: {
-    resize: {
-      width: 280,   // < should be smaller than the size in blurResize, inner picture size
-      height: 280,
-      fit: "fill",
-    },
     blurResize: {
-      size: 400,    // output image size
+      size: 400,    // output square image size
       blur: 6,
     },
   },
