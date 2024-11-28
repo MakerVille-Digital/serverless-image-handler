@@ -192,6 +192,15 @@ export class ImageHandler {
           break;
         }
         case "blurResize": {
+          // get width and height of the image
+          const metadata = await originalImage.metadata();
+          const resizeOptions = metadata.width > metadata.height 
+              ? { width: edits.blurResize.size, height: edits.blurResize.size * (metadata.height / metadata.width) } 
+              : { width: edits.blurResize.size * (metadata.width / metadata.height), height: edits.blurResize.size };
+          console.log('===> resizeOptions', resizeOptions);
+  
+          await this.applyResize(originalImage, { ...edits, resize: resizeOptions });
+          originalImage.resize(resizeOptions);
           await this.blurResize(originalImage, edits);
           break;
         }
@@ -218,6 +227,8 @@ export class ImageHandler {
       return;
     }
     const resize = this.validateResizeInputs(edits.resize);
+
+    console.log('====> resize', resize);
 
     if (resize.ratio) {
       const ratio = resize.ratio;
@@ -489,18 +500,14 @@ export class ImageHandler {
    */
   private async blurResize(originalImage: sharp.Sharp, edits: ImageEdits): Promise<void> {
     try {
-        // get width and height of the image
-        const metadata = await originalImage.metadata();
-        const resizeOptions = metadata.width > metadata.height 
-            ? { width: edits.blurResize.size } 
-            : { height: edits.blurResize.size };
-
-        const imageBuffer = await originalImage.resize(resizeOptions).toBuffer();
+        const imageBuffer = await originalImage.toBuffer();
 
         await originalImage
-          .resize(edits.blurResize.size, edits.blurResize.size, { fit: "cover" })
+          .resize({ width: edits.blurResize.size, height: edits.blurResize.size, fit: "cover",  })
           .blur(edits.blurResize.blur)
           .composite([{ input: imageBuffer, gravity: "center" }])
+
+        await originalImage.extract({ left: 0, top: Math.floor(((await originalImage.metadata()).height - edits.blurResize.size)/2), width: edits.blurResize.size, height: edits.blurResize.size });
     } catch (error) {
       throw new ImageHandlerError(
         StatusCodes.BAD_REQUEST,
