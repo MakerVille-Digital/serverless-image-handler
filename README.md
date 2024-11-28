@@ -6,7 +6,7 @@
 
 ```
 {
-  // either bucket + key or
+  // either bucket + key or link
   bucket: <bucket-name>,
   key: <image-key>,
   link: <image-link>,
