@@ -104,7 +104,7 @@ npm run clean:install
 overrideWarningsEnabled=false npx cdk bootstrap
 overrideWarningsEnabled=false npx cdk deploy\
  --parameters DeployDemoUIParameter=Yes\
-  --parameters SourceBucketsParameter=static.mirrorweare.com,static.makealive.com,makerville.hk,www-dev.makerville.hk,makealive-resources-dev,makerville-mofc-dev
+  --parameters SourceBucketsParameter=static.mirrorweare.com,static.makealive.com,makerville.hk,www-dev.makerville.hk,makealive-resources-dev,makerville-mofc-dev,prerender.makerville.hk
 ```
 
 _Note:_

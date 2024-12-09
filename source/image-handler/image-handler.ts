@@ -165,16 +165,20 @@ export class ImageHandler {
           break;
         }
         case "blurResize": {
-          // get width and height of the image
+          originalImage = await this.blurResize(originalImage, edits, true);
+          break;
+        }
+        case "artist": {
           const metadata = await originalImage.metadata();
-          const resizeOptions = metadata.width > metadata.height 
-              ? { width: edits.blurResize.size, height: edits.blurResize.size * (metadata.height / metadata.width) } 
-              : { width: edits.blurResize.size * (metadata.width / metadata.height), height: edits.blurResize.size };
-          console.log('===> resizeOptions', resizeOptions);
-  
-          await this.applyResize(originalImage, { ...edits, resize: resizeOptions });
-          originalImage.resize(resizeOptions);
-          await this.blurResize(originalImage, edits);
+          const isHorizontal = metadata.width > metadata.height 
+          if (isHorizontal) {
+            originalImage = await this.blurResize(originalImage, { blurResize: { size: edits.artist.size, blur: 5 } }, false);
+          } else {
+            const option = { width: edits.artist.size, fit: "cover", position: "top" }
+            await this.applyResize(originalImage, { ...edits, resize: option });
+            originalImage.resize(option.width, null, { fit: "cover", position: "top" });
+            await originalImage.extract({ left: 0, top: 0, width: edits.artist.size, height: edits.artist.size });
+          }
           break;
         }
         default: {
@@ -200,8 +204,6 @@ export class ImageHandler {
       return;
     }
     const resize = this.validateResizeInputs(edits.resize);
-
-    console.log('====> resize', resize);
 
     if (resize.ratio) {
       const ratio = resize.ratio;
@@ -465,17 +467,30 @@ export class ImageHandler {
    * Applies crop edit.
    * @param originalImage The original sharp image.
    * @param edits The edits to be made to the original image.
+   * @param isBlurBackground The extended part will be blurred original image or not.
    */
-  private async blurResize(originalImage: sharp.Sharp, edits: ImageEdits): Promise<void> {
+  private async blurResize(originalImage: sharp.Sharp, edits: ImageEdits, isBlurBackground: boolean): Promise<sharp.Sharp> {
     try {
-        const imageBuffer = await originalImage.toBuffer();
+        const meta = await originalImage.metadata();
+        const isHorizontal = meta.width > meta.height
+        console.log('===> pre', meta.width, meta.height);
+        const originalBuffer = await originalImage.clone().resize(isHorizontal ? { width: edits.blurResize.size } : { height: edits.blurResize.size }).toBuffer({ resolveWithObject: true });
 
-        await originalImage
-          .resize({ width: edits.blurResize.size, height: edits.blurResize.size, fit: "cover",  })
-          .blur(edits.blurResize.blur)
-          .composite([{ input: imageBuffer, gravity: "center" }])
+        console.log('===> resized', originalBuffer.info.width, originalBuffer.info.height);
+        const resizeOption = { width: edits.blurResize.size, height: edits.blurResize.size, }
+        if (isBlurBackground) {
+          resizeOption['fit'] = "cover"
+        } else {
+          resizeOption['fit'] = "contain"
+          resizeOption['background'] = { r: 0, g: 0, b: 0 }
+        }
+        const bgBuffer = await originalImage.resize(resizeOption).blur(edits.blurResize.blur).toBuffer({ resolveWithObject: true });
+        console.log('===> bgBuffer', bgBuffer.info.width, bgBuffer.info.height);
+        return await (sharp(bgBuffer.data)).composite([{ input: originalBuffer.data, gravity: "center" }]).withMetadata();
 
-        await originalImage.extract({ left: 0, top: Math.floor(((await originalImage.metadata()).height - edits.blurResize.size)/2), width: edits.blurResize.size, height: edits.blurResize.size });
+        // const top = Math.floor(((await originalImage.metadata()).height - edits.blurResize.size)/2)
+
+        // await originalImage.extract({ left: 0, top: top > 0 ? top : 0, width: edits.blurResize.size, height: edits.blurResize.size });
     } catch (error) {
       throw new ImageHandlerError(
         StatusCodes.BAD_REQUEST,

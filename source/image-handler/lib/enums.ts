@@ -52,5 +52,6 @@ export const BucketEnum = {
   "static.mirrorweare.com": "static.mirrorweare.com",
   "makerville.hk": "makerville.hk",
   "www.makerville.hk": "makerville.hk",
+  "prerender.makerville.hk": "prerender.makerville.hk",
   "www-dev.makerville.hk": "www-dev.makerville.hk",
 } as const
