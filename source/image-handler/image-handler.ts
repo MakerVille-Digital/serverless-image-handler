@@ -168,6 +168,10 @@ export class ImageHandler {
           originalImage = await this.blurResize(originalImage, edits, true);
           break;
         }
+        case "fillResize": {
+          originalImage = await this.fillResize(originalImage, edits);
+          break;
+        }
         case "artist": {
           const metadata = await originalImage.metadata();
           const isHorizontal = metadata.width > metadata.height 
@@ -495,6 +499,32 @@ export class ImageHandler {
       throw new ImageHandlerError(
         StatusCodes.BAD_REQUEST,
         `BlurResize::${error.code}`,
+        error.message
+      );
+    }
+  }
+
+  /**
+   * Applies crop edit.
+   * @param originalImage The original sharp image.
+   * @param edits The edits to be made to the original image.
+   */
+  private async fillResize(originalImage: sharp.Sharp, edits: ImageEdits): Promise<sharp.Sharp> {
+    try {
+        const meta = await originalImage.metadata();
+        console.log('===> pre', meta.width, meta.height);
+        const originalBuffer = await originalImage.clone().resize({ height: edits.fillResize.height }).toBuffer({ resolveWithObject: true });
+        console.log('===> resized', originalBuffer.info.width, originalBuffer.info.height);
+        const resizeOption = { width: edits.fillResize.width, height: edits.fillResize.height, }
+        resizeOption['fit'] = "contain"
+        resizeOption['background'] = { r: 0, g: 0, b: 0 }
+        const bgBuffer = await originalImage.resize(resizeOption).toBuffer({ resolveWithObject: true });
+        console.log('===> bgBuffer', bgBuffer.info.width, bgBuffer.info.height);
+        return await (sharp(bgBuffer.data)).composite([{ input: originalBuffer.data, gravity: "center" }]).withMetadata();
+    } catch (error) {
+      throw new ImageHandlerError(
+        StatusCodes.BAD_REQUEST,
+        `FillResize::${error.code}`,
         error.message
       );
     }
