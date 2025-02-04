@@ -23,4 +23,4 @@ export interface ErrorMapping {
   message: string | Function;
 }
 
-type AllowlistedEdit = (typeof SHARP_EDIT_ALLOWLIST_ARRAY)[number] | (typeof ALTERNATE_EDIT_ALLOWLIST_ARRAY)[number] | 'blurResize';
+type AllowlistedEdit = (typeof SHARP_EDIT_ALLOWLIST_ARRAY)[number] | (typeof ALTERNATE_EDIT_ALLOWLIST_ARRAY)[number] | 'blurResize' | 'artist' | 'fillResize';
